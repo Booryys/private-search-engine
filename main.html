@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Private Search Engine</title>
+</head>
+<body>
+  <form id="search-form" onsubmit="search(event)">
+    <input type="text" id="search-input" placeholder="Enter your search query" />
+    <button type="submit">Search</button>
+  </form>
+  
+  <ul id="search-results"></ul>
+
+  <script>
+    function search(event) {
+      event.preventDefault();
+      const searchQuery = document.getElementById("search-input").value;
+      if (searchQuery.trim() !== "") {
+        const googleResults = performSearchWithGoogle(searchQuery);
+        const duckduckgoResults = performSearchWithDuckDuckGo(searchQuery);
+        const bingResults = performSearchWithBing(searchQuery);
+        
+        Promise.all([googleResults, duckduckgoResults, bingResults])
+          .then(results => displaySearchResults(results.flat()))
+          .catch(error => console.error(error));
+      }
+    }
+
+    function performSearchWithGoogle(query) {
+      const googleAPIEndpoint = `https://www.googleapis.com/customsearch/v1?key=YOUR_GOOGLE_API_KEY&cx=YOUR_CUSTOM_SEARCH_ENGINE_ID&q=${query}`;
+      return fetch(googleAPIEndpoint)
+        .then(response => response.json())
+        .then(data => data.items.map(item => ({
+          title: item.title,
+          link: item.link,
+          snippet: item.snippet,
+          source: 'Google'
+        })));
+    }
+
+    function performSearchWithDuckDuckGo(query) {
+      const duckduckgoAPIEndpoint = `https://api.duckduckgo.com/?q=${query}&format=json`;
+      return fetch(duckduckgoAPIEndpoint)
+        .then(response => response.json())
+        .then(data => data.Results.map(item => ({
+          title: item.Text,
+          link: item.FirstURL,
+          snippet: item.Text,
+          source: 'DuckDuckGo'
+        })));
+    }
+
+    function performSearchWithBing(query) {
+      const bingAPIEndpoint = `https://api.bing.com/qsonhs.aspx?type=web&FORM=HDRSC2&q=${query}`;
+      return fetch(bingAPIEndpoint)
+        .then(response => response.json())
+        .then(data => data.Results.map(item => ({
+          title: item.Title,
+          link: item.Url,
+          snippet: item.Description,
+          source: 'Bing'
+        })));
+    }
+
+    function displaySearchResults(results) {
+      const searchResultsElement = document.getElementById("search-results");
+      searchResultsElement.innerHTML = "";
+      
+      if (results.length > 0) {
+        results.forEach(result => {
+          const li = document.createElement("li");
+          const title = document.createElement("a");
+          title.href = result.link;
+          title.textContent = result.title;
+          li.appendChild(title);
+
+          const source = document.createElement("span");
+          source.textContent = `(${result.source})`;
+          li.appendChild(source);
+
+          const snippet = document.createElement("p");
+          snippet.textContent = result.snippet;
+          li.appendChild(snippet);
+
+          searchResultsElement.appendChild(li);
+        });
+      } else {
+        const message = document.createElement("p");
+        message.textContent = "No results found.";
+        searchResultsElement.appendChild(message);
+      }
+    }
+  </script>
+</body>
+</html>
