@@ -27,7 +27,9 @@
     }
 
     function performSearchWithGoogle(query) {
-      const googleAPIEndpoint = `https://www.googleapis.com/customsearch/v1?key=YOUR_GOOGLE_API_KEY&cx=YOUR_CUSTOM_SEARCH_ENGINE_ID&q=${query}`;
+      const apiKey = ''; // Replace with your actual Google API key
+      const customSearchEngineId = ''; // Replace with your Custom Search Engine ID
+      const googleAPIEndpoint = `https://www.googleapis.com/customsearch/v1?key=${apiKey}&cx=${customSearchEngineId}&q=${query}`;
       return fetch(googleAPIEndpoint)
         .then(response => response.json())
         .then(data => data.items.map(item => ({
